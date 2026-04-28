@@ -1,0 +1,296 @@
+{% load static %}
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Keuangan Mahasiswa</title>
+    <!-- Boxicons -->
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <i class="bx bxs-wallet-alt"></i>
+          <span>Keuangan<br />Mahasiswa</span>
+        </div>
+      </div>
+      <ul class="nav-links">
+        <li class="active">
+          <a href="#">
+            <i class="bx bxs-home"></i>
+            <span class="link_name">Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'pemasukan' %}">
+            <i class="bx bx-trending-up"></i>
+            <span class="link_name">Pemasukan</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'pengeluaran' %}">
+            <i class="bx bx-trending-down"></i>
+            <span class="link_name">Pengeluaran</span>
+          </a>
+        </li>
+        <li>
+          <a href="{% url 'anggaran' %}">
+            <i class="bx bx-briefcase-alt-2"></i>
+            <span class="link_name">Anggaran</span>
+          </a>
+        </li>
+      </ul>
+      <div class="logout-container">
+        <form action="{% url 'logout' %}" method="POST" id="logout-form">
+          {% csrf_token %}
+          <a href="#" onclick="document.getElementById('logout-form').submit()">
+            <i class="bx bx-log-out"></i>
+            <span class="link_name">Keluar</span>
+          </a>
+        </form>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div></div>
+        <!-- Spacer -->
+        <div class="topbar-right">
+          <div class="notification">
+            <i class="bx bx-bell"></i>
+            <span class="badge"></span>
+          </div>
+          <div class="user-profile">
+            <div class="user-icon">
+              <i class="bx bxs-user"></i>
+            </div>
+            <span class="user-name">{{ nama|default:"Eva" }}</span>
+            <i class="bx bx-chevron-down"></i>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard Content -->
+      <div class="dashboard-content">
+        <div class="welcome-text">
+          <h1>Selamat Datang, <span>{{ nama|default:"Eva" }}!</span></h1>
+          <p>Kelola keuanganmu dengan bijak</p>
+        </div>
+
+        <!-- Cards -->
+        <div class="cards">
+          <div class="card">
+            <div class="card-icon green">
+              <i class="bx bx-archive-in"></i>
+            </div>
+            <div class="card-info">
+              <h3>Total Pemasukan</h3>
+              <h2>Rp {{ total_pemasukan|default:"5.200.000" }}</h2>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-icon red">
+              <i class="bx bx-archive-out"></i>
+            </div>
+            <div class="card-info">
+              <h3>Total Pengeluaran</h3>
+              <h2>Rp {{ total_pengeluaran|default:"3.750.000" }}</h2>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-icon yellow">
+              <i class="bx bx-coin-stack"></i>
+            </div>
+            <div class="card-info">
+              <h3>Saldo Saat Ini</h3>
+              <h2>Rp {{ saldo_saat_ini|default:"1.450.000" }}</h2>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-icon blue">
+              <i class="bx bx-credit-card-front"></i>
+            </div>
+            <div class="card-info">
+              <h3>Anggaran Bulan Ini</h3>
+              <h2>Rp {{ anggaran_bulan_ini|default:"4.000.000" }}</h2>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail Sections -->
+        <div class="details-section">
+          <!-- Anggaran Bulanan -->
+          <div class="budget-section box-shadow">
+            <h2>Anggaran Bulanan</h2>
+            <div class="table-responsive">
+              <table class="budget-table">
+                <thead>
+                  <tr>
+                    <th>Kategori</th>
+                    <th>Anggaran</th>
+                    <th>Terpakai</th>
+                    <th>Sisa</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% if anggaran_bulanan %} {% for item in anggaran_bulanan %}
+                  <tr>
+                    <td>
+                      <div class="cat-label">
+                        <div class="cat-icon {{ item.color_class }}">
+                          <i class="bx {{ item.icon }}"></i>
+                        </div>
+                        <span>{{ item.kategori }}</span>
+                      </div>
+                    </td>
+                    <td>Rp {{ item.anggaran }}</td>
+                    <td class="bold-text">Rp {{ item.terpakai }}</td>
+                    <td class="green-text">Rp {{ item.sisa }}</td>
+                  </tr>
+                  {% endfor %} {% else %}
+                  <!-- Mock Data dari Figma jika context kosong -->
+                  <tr>
+                    <td>
+                      <div class="cat-label">
+                        <div class="cat-icon yellow-bg">
+                          <i class="bx bx-restaurant"></i>
+                        </div>
+                        <span>Makan</span>
+                      </div>
+                    </td>
+                    <td>Rp 1.500.000</td>
+                    <td class="bold-text">Rp 600.000</td>
+                    <td class="green-text">Rp 900.000</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="cat-label">
+                        <div class="cat-icon blue-bg">
+                          <i class="bx bx-bus"></i>
+                        </div>
+                        <span>Transportasi</span>
+                      </div>
+                    </td>
+                    <td>Rp 800.000</td>
+                    <td class="bold-text">Rp 400.000</td>
+                    <td class="green-text">Rp 400.000</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="cat-label">
+                        <div class="cat-icon red-bg">
+                          <i class="bx bx-book"></i>
+                        </div>
+                        <span>Buku Kuliah</span>
+                      </div>
+                    </td>
+                    <td>Rp 1.200.000</td>
+                    <td class="bold-text">Rp 950.000</td>
+                    <td class="green-text">Rp 250.000</td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <div class="cat-label">
+                        <div class="cat-icon green-bg">
+                          <i class="bx bx-wifi"></i>
+                        </div>
+                        <span>Internet</span>
+                      </div>
+                    </td>
+                    <td>Rp 500.000</td>
+                    <td class="bold-text">Rp 300.000</td>
+                    <td class="green-text">Rp 200.000</td>
+                  </tr>
+                  {% endif %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Pengeluaran Terbaru -->
+          <div class="recent-expense-section box-shadow">
+            <h2>Pengeluaran Terbaru</h2>
+            <div class="expense-list">
+              {% if pengeluaran_terbaru %} {% for expense in pengeluaran_terbaru %}
+              <div class="expense-item">
+                <div class="expense-left">
+                  <div class="cat-icon red-bg">
+                    <i class="bx bx-credit-card"></i>
+                  </div>
+                  <div class="expense-info">
+                    <h4>{{ expense.id_kategori.nama|default:expense.deskripsi|truncatechars:20 }}</h4>
+                    <span>{{ expense.tanggal|date:"d M Y" }}</span>
+                  </div>
+                </div>
+                <div class="expense-amount red-text">
+                  -Rp {{ expense.jumlah|floatformat:0 }}
+                </div>
+              </div>
+              {% endfor %} {% else %}
+              <!-- Mock Data dari Figma jika context kosong -->
+              <div class="expense-item">
+                <div class="expense-left">
+                  <div class="cat-icon yellow-bg">
+                    <i class="bx bx-restaurant"></i>
+                  </div>
+                  <div class="expense-info">
+                    <h4>Transportasi</h4>
+                    <span>23 Feb 2026</span>
+                  </div>
+                </div>
+                <div class="expense-amount red-text">-Rp 150.000</div>
+              </div>
+              <div class="expense-item">
+                <div class="expense-left">
+                  <div class="cat-icon blue-bg"><i class="bx bx-bus"></i></div>
+                  <div class="expense-info">
+                    <h4>Makan</h4>
+                    <span>20 Feb 2026</span>
+                  </div>
+                </div>
+                <div class="expense-amount red-text">-Rp 75.000</div>
+              </div>
+              <div class="expense-item">
+                <div class="expense-left">
+                  <div class="cat-icon red-bg"><i class="bx bx-book"></i></div>
+                  <div class="expense-info">
+                    <h4>Buku Kuliah</h4>
+                    <span>18 Feb 2026</span>
+                  </div>
+                </div>
+                <div class="expense-amount red-text">-Rp 200.000</div>
+              </div>
+              <div class="expense-item">
+                <div class="expense-left">
+                  <div class="cat-icon green-bg">
+                    <i class="bx bx-wifi"></i>
+                  </div>
+                  <div class="expense-info">
+                    <h4>Internet</h4>
+                    <span>15 Feb 2026</span>
+                  </div>
+                </div>
+                <div class="expense-amount red-text">-Rp 100.000</div>
+              </div>
+              {% endif %}
+            </div>
+            <a href="#" class="view-all"
+              >Lihat Semua <i class="bx bx-right-arrow-alt"></i
+            ></a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="{% static 'js/dashboard.js' %}"></script>
+  </body>
+</html>

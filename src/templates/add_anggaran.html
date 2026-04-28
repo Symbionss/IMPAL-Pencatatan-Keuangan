@@ -1,0 +1,95 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Anggaran - Keuangan Mahasiswa</title>
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/anggaran.css' %}">
+</head>
+<body>
+    <div class="bg-watermarks">
+        <i class='bx bx-briefcase-alt-2'></i>
+        <i class='bx bx-briefcase-alt-2'></i>
+        <i class='bx bx-briefcase-alt-2'></i>
+        <i class='bx bx-briefcase-alt-2'></i>
+    </div>
+    
+    <a href="{% url 'anggaran' %}" class="back-btn"><i class='bx bx-arrow-back'></i> Kembali ke Anggaran</a>
+
+    <div class="main-card">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab" onclick="location.href='{% url 'add_pemasukan' %}'">Pemasukan</button>
+                    <button class="tab" onclick="location.href='{% url 'add_pengeluaran' %}'">Pengeluaran</button>
+                    <button class="tab active" onclick="location.href='{% url 'add_anggaran' %}'">Anggaran</button>
+                </div>
+            </div>
+            
+            <div class="menu-list">
+                <!-- Option 1: Amount and Details -->
+                <div class="menu-item active" id="menu-details">
+                    <div class="menu-icon"><i class='bx bx-money'></i></div>
+                    <div class="menu-text">
+                        <h4>Budget Amount</h4>
+                        <p>Isi nominal anggaran dan periode untuk bulan ini</p>
+                    </div>
+                </div>
+
+                <!-- Option 2: Category and Date -->
+                <div class="menu-item" id="menu-cat-date">
+                    <div class="menu-icon"><i class='bx bx-menu'></i></div>
+                    <div class="menu-text">
+                        <h4>Category</h4>
+                        <p>Pilih Kategori Pos Anggaran yang ditargetkan</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <form method="POST" action="{% url 'add_anggaran' %}" id="anggaran-form" style="display: contents;">
+                {% csrf_token %}
+                <input type="hidden" name="jumlah_anggaran" id="hidden-jumlah" value="0">
+                
+                <!-- View 1: Details / Add Transaction -->
+            <div class="view-section" id="view-details">
+                <div class="inner-card details-card">
+                    <div class="amount-display">
+                        <span class="currency">Rp</span>
+                        <span class="amount-input" contenteditable="true" id="amount-field">0</span>
+                        <span class="decimals">.-</span>
+                    </div>
+                    <div class="separator"></div>
+                    <div class="details-text">
+                        <p class="subtitle">Periode :</p>
+                        <input type="text" name="periode" placeholder="Contoh: April 2026" required style="width: 100%; border:none; outline:none; font-family:'Poppins', sans-serif; font-size: 1rem; color: #555;">
+                    </div>
+                </div>
+                <button type="button" class="action-btn" id="btn-next-view">Add Budget Amount</button>
+            </div>
+
+            <!-- View 2: Category -->
+            <div class="view-section" id="view-cat-date" style="display: none;">
+                <div class="inner-card form-card">
+                    <h3>Category</h3>
+                    <div class="form-group">
+                        <input type="text" name="kategori" placeholder="Masukkan Kategori (Cth: Transportasi)" value="" required>
+                    </div>
+                </div>
+                <button type="submit" class="action-btn">Submit Anggaran</button>
+            </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="{% static 'js/anggaran.js' %}"></script>
+</body>
+</html>

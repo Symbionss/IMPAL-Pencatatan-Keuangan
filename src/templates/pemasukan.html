@@ -1,0 +1,222 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pemasukan - Keuangan Mahasiswa</title>
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <style>
+        .list-card {
+            background-color: var(--white);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+            min-height: 480px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+            position: relative;
+        }
+        .list-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .list-card-header h2 {
+            font-size: 1.4rem;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+        .btn-add {
+            background: var(--green-main);
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(42, 110, 71, 0.2);
+        }
+        .btn-add:hover {
+            background: var(--sidebar-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(42, 110, 71, 0.3);
+        }
+        
+        .pemasukan-item {
+            display: flex;
+            align-items: center;
+            padding: 18px 20px;
+            border-radius: 14px;
+            border: 1px solid #EAEAEA;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
+        .pemasukan-item:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+            border-color: #D1E5D9;
+        }
+        .p-icon {
+            width: 45px; height: 45px;
+            border-radius: 12px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.5rem;
+            margin-right: 18px;
+            background-color: var(--green-light);
+            color: var(--green-main);
+        }
+        .p-info h4 { font-size: 1.05rem; font-weight: 600; color: var(--text-color); margin-bottom: 3px; }
+        .p-info span { font-size: 0.85rem; color: var(--text-muted); }
+        .p-amount { margin-left: auto; font-size: 1.15rem; font-weight: 600; color: #2F9B69; }
+        
+        /* Topbar Search matching Figma */
+        .search-bar {
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 8px 18px;
+            display: flex; align-items: center; gap: 8px;
+            width: 300px;
+        }
+        .search-bar i { color: #888; font-size: 1.2rem; }
+        .search-bar input {
+            border: none; outline: none; background: transparent; font-family: 'Poppins', sans-serif;
+            width: 100%;
+        }
+        .topbar-left { display: flex; align-items: center; gap: 40px; }
+        .topbar-left h1 { font-size: 1.8rem; font-weight: 600; color: var(--text-color); }
+        
+        .bg-watermark {
+            position: absolute;
+            z-index: 0;
+            color: rgba(0,0,0,0.02);
+            font-weight: bold;
+        }
+        .watermark-1 { font-size: 20rem; top: 10%; right: 5%; transform: rotate(15deg); }
+        .watermark-2 { font-size: 15rem; bottom: -5%; left: 30%; transform: rotate(-10deg); }
+    </style>
+</head>
+<body>
+    <i class='bx bx-dollar bg-watermark watermark-1'></i>
+    <i class='bx bx-dollar bg-watermark watermark-2'></i>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" style="z-index: 10;">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="bx bxs-wallet-alt"></i>
+                <span>Keuangan<br />Mahasiswa</span>
+            </div>
+        </div>
+        <ul class="nav-links">
+            <li>
+                <a href="{% url 'dashboard' %}">
+                    <i class="bx bxs-home"></i>
+                    <span class="link_name">Dashboard</span>
+                </a>
+            </li>
+            <li class="active">
+                <a href="{% url 'pemasukan' %}">
+                    <i class="bx bx-trending-up"></i>
+                    <span class="link_name">Pemasukan</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'pengeluaran' %}">
+                    <i class="bx bx-trending-down"></i>
+                    <span class="link_name">Pengeluaran</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'anggaran' %}">
+                    <i class="bx bx-briefcase-alt-2"></i>
+                    <span class="link_name">Anggaran</span>
+                </a>
+            </li>
+        </ul>
+        <div class="logout-container">
+            <form action="{% url 'logout' %}" method="POST" id="logout-form">
+                {% csrf_token %}
+                <a href="#" onclick="document.getElementById('logout-form').submit()">
+                    <i class="bx bx-log-out"></i>
+                    <span class="link_name">Keluar</span>
+                </a>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" style="z-index: 5; position: relative;">
+        <!-- Topbar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <h1>Pemasukan</h1>
+                <div class="search-bar">
+                    <i class='bx bx-search'></i>
+                    <input type="text" placeholder="Cari pemasukan...">
+                </div>
+            </div>
+            <div class="topbar-right">
+                <div class="notification">
+                    <i class="bx bx-bell"></i>
+                    <span class="badge"></span>
+                </div>
+                <div class="user-profile">
+                    <div class="user-icon">
+                        <i class="bx bxs-user"></i>
+                    </div>
+                    <span class="user-name">{{ nama|default:"User" }}</span>
+                    <i class="bx bx-chevron-down"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <div class="list-card">
+                <div class="list-card-header">
+                    <h2>Pemasukan</h2>
+                    <a href="{% url 'add_pemasukan' %}" class="btn-add"><i class='bx bx-plus'></i> Tambah Pemasukan</a>
+                </div>
+
+                {% if pemasukan_list %}
+                    {% regroup pemasukan_list by tanggal as grouped_pemasukan %}
+                    {% for group in grouped_pemasukan %}
+                        <h3 style="font-size:1.15rem; color:var(--text-color); margin: 25px 0 15px 0; font-weight: 600;">
+                            {{ group.grouper|date:"l, d F Y" }}
+                        </h3>
+                        {% for p in group.list %}
+                        <div class="pemasukan-item">
+                            <div class="p-icon"><i class='bx bx-wallet-alt'></i></div>
+                            <div class="p-info">
+                                <h4>{{ p.id_kategori.nama|default:p.deskripsi }}</h4>
+                                <span>{{ p.tanggal|date:"d F Y" }} - {{ p.deskripsi|default:"Transaksi" }}</span>
+                            </div>
+                            <div class="p-amount">+Rp {{ p.jumlah|floatformat:0 }}</div>
+                        </div>
+                        {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <!-- Mock Data -->
+                    <h3 style="font-size:1.15rem; color:var(--text-color); margin: 25px 0 15px 0; font-weight: 600;">Senin, 6 April 2025</h3>
+                    <div class="pemasukan-item">
+                        <div class="p-icon"><i class='bx bx-wallet-alt'></i></div>
+                        <div class="p-info">
+                            <h4>Uang Saku</h4>
+                            <span>01 April 2025, 22:00</span>
+                        </div>
+                        <div class="p-amount">+Rp 500.000</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</body>
+</html>

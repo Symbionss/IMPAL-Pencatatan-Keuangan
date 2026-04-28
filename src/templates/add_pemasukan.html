@@ -1,0 +1,98 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Pemasukan - Keuangan Mahasiswa</title>
+    <!-- Boxicons -->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/pemasukan.css' %}">
+</head>
+<body>
+    <div class="bg-watermarks">
+        <i class='bx bx-dollar'></i>
+        <i class='bx bx-dollar'></i>
+        <i class='bx bx-dollar'></i>
+        <i class='bx bx-dollar'></i>
+    </div>
+    
+    <a href="{% url 'pemasukan' %}" class="back-btn"><i class='bx bx-arrow-back'></i> Kembali ke Pemasukan</a>
+
+    <div class="main-card">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <div class="tabs-container">
+                <div class="tabs">
+                    <button class="tab active" onclick="location.href='{% url 'add_pemasukan' %}'">Pemasukan</button>
+                    <button class="tab" onclick="location.href='{% url 'add_pengeluaran' %}'">Pengeluaran</button>
+                </div>
+            </div>
+            
+            <div class="menu-list">
+                <!-- Option 1: Amount and Details -->
+                <div class="menu-item active" id="menu-details">
+                    <div class="menu-icon"><i class='bx bx-money'></i></div>
+                    <div class="menu-text">
+                        <h4>Transaction Amount</h4>
+                        <p>Isi nominal dan detail keterangan pemasukan</p>
+                    </div>
+                </div>
+
+                <!-- Option 2: Category and Date -->
+                <div class="menu-item" id="menu-cat-date">
+                    <div class="menu-icon"><i class='bx bx-menu'></i></div>
+                    <div class="menu-text">
+                        <h4>Category and Date</h4>
+                        <p>Pilih Kategori dan Tanggal untuk sumber pemasukan</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <form method="POST" action="{% url 'add_pemasukan' %}" id="pemasukan-form" style="display: contents;">
+                {% csrf_token %}
+                <input type="hidden" name="jumlah" id="hidden-jumlah" value="0">
+                
+                <!-- View 1: Details / Add Transaction -->
+            <div class="view-section" id="view-details">
+                <div class="inner-card details-card">
+                    <div class="amount-display">
+                        <span class="currency">Rp</span>
+                        <span class="amount-input" contenteditable="true" id="amount-field">0</span>
+                        <span class="decimals">.-</span>
+                    </div>
+                    <div class="separator"></div>
+                    <div class="details-text">
+                        <p class="subtitle">Details :</p>
+                        <textarea name="deskripsi" placeholder="Tuliskan keterangan lebih lanjut mengenai transaksi pemasukan ini..."></textarea>
+                    </div>
+                </div>
+                <button type="button" class="action-btn" id="btn-next-view">Add transaction</button>
+            </div>
+
+            <!-- View 2: Category and Date -->
+            <div class="view-section" id="view-cat-date" style="display: none;">
+                <div class="inner-card form-card">
+                    <h3>Category and Date</h3>
+                    <div class="form-group">
+                        <input type="text" name="kategori" placeholder="Masukkan Kategori (Cth: Kendaraan)" value="">
+                    </div>
+                    <div class="form-group">
+                        <input type="date" name="tanggal" required>
+                    </div>
+                </div>
+                <button type="submit" class="action-btn">Submit Pemasukan</button>
+            </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pemasukan JS -->
+    <script src="{% static 'js/pemasukan.js' %}"></script>
+</body>
+</html>
