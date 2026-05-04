@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Login | Pencatatan Keuangan</title>
+    <title>Register | Pencatatan Keuangan</title>
     <!-- Import Fonts -->
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@500;600&display=swap"
@@ -262,7 +262,7 @@
         <div class="form-card">
           <div class="top-icon">$</div>
 
-          <h2>Login</h2>
+          <h2>Register</h2>
 
           {% if messages %}
           <div class="action-panel">
@@ -297,15 +297,25 @@
                 placeholder="Enter Your password"
                 required
               />
-              <a href="#" class="forgot-pass">Forgot Password?</a>
             </div>
 
-            <button type="submit">Login</button>
+            <div class="form-group">
+              <label for="retype-password">Retype Password</label>
+              <input
+                type="retype-password"
+                id="retype-password"
+                name="retype-password"
+                placeholder="Retype Your password"
+                required
+              />
+            </div>
+
+            <button type="submit">Register</button>
           </form>
 
           <div class="register-link">
-            Dont have an account? <br />
-            <a href="/register">Register Now</a>
+            Already have an account? <br />
+            <a href="/">Login Now</a>
           </div>
         </div>
       </div>

@@ -20,6 +20,7 @@ from webiste.views import (
     PemasukanListView, AddPemasukanView, 
     PengeluaranListView, AddPengeluaranView, 
     AnggaranListView, AddAnggaranView,
+    RegisterView,
     UserLoginAPIView, PemasukanAPIView, PengeluaranAPIView, AnggaranAPIView
 )
 
@@ -34,6 +35,7 @@ urlpatterns = [
     path('anggaran/', AnggaranListView.as_view(), name='anggaran'),
     path('anggaran/add/', AddAnggaranView.as_view(), name='add_anggaran'),
     path('logout/', LogoutView.as_view(), name='logout'),
+    path('register/', RegisterView.as_view(), name='register'),
     
     # API endpoints untuk Postman
     path('api/login/', UserLoginAPIView.as_view(), name='api_login'),

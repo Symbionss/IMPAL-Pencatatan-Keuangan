@@ -4,7 +4,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard - Keuangan Mahasiswa</title>
+    <title>Dashboard | Pencatatan Keuangan</title>
     <!-- Boxicons -->
     <link
       href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
@@ -158,58 +158,31 @@
                   </tr>
                   {% endfor %} {% else %}
                   <!-- Mock Data dari Figma jika context kosong -->
+
                   <tr>
-                    <td>
-                      <div class="cat-label">
-                        <div class="cat-icon yellow-bg">
-                          <i class="bx bx-restaurant"></i>
+                    <td colspan="4">
+                      <div
+                        style="
+                          display: flex;
+                          align-items: center;
+                          padding: 18px 20px;
+                          border-radius: 14px;
+                          border: 1px solid #eaeaea;
+                          margin-bottom: 15px;
+                          transition: 0.3s;
+                        "
+                      >
+                        <div class="p-info">
+                          <h4>Sedang Kosong</h4>
+                          <span
+                            >Catat keuangan Anda agar tercatat dengan
+                            rapi.</span
+                          >
                         </div>
-                        <span>Makan</span>
                       </div>
                     </td>
-                    <td>Rp 1.500.000</td>
-                    <td class="bold-text">Rp 600.000</td>
-                    <td class="green-text">Rp 900.000</td>
                   </tr>
-                  <tr>
-                    <td>
-                      <div class="cat-label">
-                        <div class="cat-icon blue-bg">
-                          <i class="bx bx-bus"></i>
-                        </div>
-                        <span>Transportasi</span>
-                      </div>
-                    </td>
-                    <td>Rp 800.000</td>
-                    <td class="bold-text">Rp 400.000</td>
-                    <td class="green-text">Rp 400.000</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="cat-label">
-                        <div class="cat-icon red-bg">
-                          <i class="bx bx-book"></i>
-                        </div>
-                        <span>Buku Kuliah</span>
-                      </div>
-                    </td>
-                    <td>Rp 1.200.000</td>
-                    <td class="bold-text">Rp 950.000</td>
-                    <td class="green-text">Rp 250.000</td>
-                  </tr>
-                  <tr>
-                    <td>
-                      <div class="cat-label">
-                        <div class="cat-icon green-bg">
-                          <i class="bx bx-wifi"></i>
-                        </div>
-                        <span>Internet</span>
-                      </div>
-                    </td>
-                    <td>Rp 500.000</td>
-                    <td class="bold-text">Rp 300.000</td>
-                    <td class="green-text">Rp 200.000</td>
-                  </tr>
+
                   {% endif %}
                 </tbody>
               </table>
@@ -220,14 +193,16 @@
           <div class="recent-expense-section box-shadow">
             <h2>Pengeluaran Terbaru</h2>
             <div class="expense-list">
-              {% if pengeluaran_terbaru %} {% for expense in pengeluaran_terbaru %}
+              {% if pengeluaran_terbaru %} {% for expense in pengeluaran_terbaru%}
               <div class="expense-item">
                 <div class="expense-left">
                   <div class="cat-icon red-bg">
                     <i class="bx bx-credit-card"></i>
                   </div>
                   <div class="expense-info">
-                    <h4>{{ expense.id_kategori.nama|default:expense.deskripsi|truncatechars:20 }}</h4>
+                    <h4>
+                      {{ expense.id_kategori.nama|default:expense.deskripsi|truncatechars:20 }}
+                    </h4>
                     <span>{{ expense.tanggal|date:"d M Y" }}</span>
                   </div>
                 </div>
@@ -243,47 +218,14 @@
                     <i class="bx bx-restaurant"></i>
                   </div>
                   <div class="expense-info">
-                    <h4>Transportasi</h4>
-                    <span>23 Feb 2026</span>
+                    <h4>Belum Ada Pengeluaran</h4>
+                    <span>Catat pengeluaran Anda agar tercatat dengan rapi.</span>
                   </div>
                 </div>
-                <div class="expense-amount red-text">-Rp 150.000</div>
-              </div>
-              <div class="expense-item">
-                <div class="expense-left">
-                  <div class="cat-icon blue-bg"><i class="bx bx-bus"></i></div>
-                  <div class="expense-info">
-                    <h4>Makan</h4>
-                    <span>20 Feb 2026</span>
-                  </div>
-                </div>
-                <div class="expense-amount red-text">-Rp 75.000</div>
-              </div>
-              <div class="expense-item">
-                <div class="expense-left">
-                  <div class="cat-icon red-bg"><i class="bx bx-book"></i></div>
-                  <div class="expense-info">
-                    <h4>Buku Kuliah</h4>
-                    <span>18 Feb 2026</span>
-                  </div>
-                </div>
-                <div class="expense-amount red-text">-Rp 200.000</div>
-              </div>
-              <div class="expense-item">
-                <div class="expense-left">
-                  <div class="cat-icon green-bg">
-                    <i class="bx bx-wifi"></i>
-                  </div>
-                  <div class="expense-info">
-                    <h4>Internet</h4>
-                    <span>15 Feb 2026</span>
-                  </div>
-                </div>
-                <div class="expense-amount red-text">-Rp 100.000</div>
               </div>
               {% endif %}
             </div>
-            <a href="#" class="view-all"
+            <a href="/pengeluaran" class="view-all"
               >Lihat Semua <i class="bx bx-right-arrow-alt"></i
             ></a>
           </div>

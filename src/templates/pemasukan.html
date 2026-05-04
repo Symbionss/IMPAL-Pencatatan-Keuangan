@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pemasukan - Keuangan Mahasiswa</title>
+    <title>Pemasukan | Pencatatan Keuangan</title>
     <!-- Boxicons -->
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <!-- Google Fonts -->
@@ -163,11 +163,6 @@
                     <input type="text" placeholder="Cari pemasukan...">
                 </div>
             </div>
-            <div class="topbar-right">
-                <div class="notification">
-                    <i class="bx bx-bell"></i>
-                    <span class="badge"></span>
-                </div>
                 <div class="user-profile">
                     <div class="user-icon">
                         <i class="bx bxs-user"></i>
@@ -205,14 +200,13 @@
                     {% endfor %}
                 {% else %}
                     <!-- Mock Data -->
-                    <h3 style="font-size:1.15rem; color:var(--text-color); margin: 25px 0 15px 0; font-weight: 600;">Senin, 6 April 2025</h3>
+                    <h3 style="font-size:1.15rem; color:var(--text-color); margin: 25px 0 15px 0; font-weight: 600;">Sedang Kosong</h3>
                     <div class="pemasukan-item">
                         <div class="p-icon"><i class='bx bx-wallet-alt'></i></div>
                         <div class="p-info">
-                            <h4>Uang Saku</h4>
-                            <span>01 April 2025, 22:00</span>
+                            <h4>Belum Ada Pemasukan</h4>
+                            <span>Catat pemasukan Anda agar tercatat dengan rapi.</span>
                         </div>
-                        <div class="p-amount">+Rp 500.000</div>
                     </div>
                 {% endif %}
             </div>

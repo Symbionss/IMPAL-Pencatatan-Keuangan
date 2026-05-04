@@ -3,6 +3,28 @@ from django.views.generic import TemplateView, View
 from django.contrib import messages
 from .models import User
 
+class RegisterView(TemplateView):
+    template_name = "register.html"
+
+    def post(self, request, *args, **kwargs):
+        nama = request.POST.get('nama')
+        password = request.POST.get('password')
+        retype_password = request.POST.get('retype-password')
+
+        if nama and password and retype_password:
+            if password == retype_password:
+                User.objects.create(
+                    nama=nama,
+                    password=password
+                )
+                return redirect('index')
+            else:
+                messages.error(request, "Password yang dimasukan tidak sama.")
+                return render(request, self.template_name)
+        else:
+            messages.error(request, "Tolong isi nama, password, dan retype password.")
+            return render(request, self.template_name)
+
 class IndexView(TemplateView):
     template_name = "index.html"
 
