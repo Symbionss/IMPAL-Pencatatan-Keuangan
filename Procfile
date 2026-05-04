@@ -1,1 +1,1 @@
-web: gunicorn nama_project.wsgi
+web: cd src && gunicorn cfehome.wsgi
