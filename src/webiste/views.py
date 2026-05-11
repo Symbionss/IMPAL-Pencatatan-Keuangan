@@ -60,52 +60,21 @@ class DashboardView(TemplateView):
             return redirect('index')
 
         user_id = request.session.get('user_id')
-        user_biasa = UserBiasa.objects.filter(id_user=user_id).first()
+        user_biasa = UserBiasa.get_or_create_user(user_id)
 
-        total_p = 0
-        total_q = 0
-        total_anggaran = 0
-        pengeluaran_terbaru = []
-        anggaran_bulanan = []
-        if user_biasa:
-            from django.db.models import Sum
-            total_p = Pemasukan.objects.filter(id_user=user_biasa).aggregate(Sum('jumlah'))['jumlah__sum'] or 0
-            total_q = Pengeluaran.objects.filter(id_user=user_biasa).aggregate(Sum('jumlah'))['jumlah__sum'] or 0
-            pengeluaran_terbaru = Pengeluaran.objects.filter(id_user=user_biasa).order_by('-tanggal')[:4]
-
-            # Anggaran calculation
-            total_anggaran = Anggaran.objects.filter(id_user=user_biasa).aggregate(Sum('jumlah_anggaran'))['jumlah_anggaran__sum'] or 0
-            all_anggarans = Anggaran.objects.filter(id_user=user_biasa)
-            
-            def format_rupiah_internal(val):
-                return "{:,.0f}".format(val).replace(',', '.')
-                
-            for ang in all_anggarans:
-                kat = ang.id_kategori
-                terpakai = Pengeluaran.objects.filter(id_user=user_biasa, id_kategori=kat).aggregate(Sum('jumlah'))['jumlah__sum'] or 0
-                sisa = ang.jumlah_anggaran - terpakai
-                anggaran_bulanan.append({
-                    'kategori': kat.nama,
-                    'anggaran': format_rupiah_internal(ang.jumlah_anggaran),
-                    'terpakai': format_rupiah_internal(terpakai),
-                    'sisa': format_rupiah_internal(sisa),
-                    'icon': 'bx-briefcase-alt-2',
-                    'color_class': 'blue-bg'
-                })
-            
-        saldo = total_p - total_q
+        laporan = user_biasa.lihatLaporan()
         
         def format_rupiah(value):
             return "{:,.0f}".format(value).replace(',', '.')
 
         context = {
             'nama': request.session.get('nama'),
-            'total_pemasukan': format_rupiah(total_p),
-            'total_pengeluaran': format_rupiah(total_q),
-            'saldo_saat_ini': format_rupiah(saldo),
-            'anggaran_bulan_ini': format_rupiah(total_anggaran),
-            'pengeluaran_terbaru': pengeluaran_terbaru,
-            'anggaran_bulanan': anggaran_bulanan
+            'total_pemasukan': format_rupiah(laporan['total_pemasukan']),
+            'total_pengeluaran': format_rupiah(laporan['total_pengeluaran']),
+            'saldo_saat_ini': format_rupiah(laporan['saldo_saat_ini']),
+            'anggaran_bulan_ini': format_rupiah(laporan['anggaran_bulan_ini']),
+            'pengeluaran_terbaru': laporan['pengeluaran_terbaru'],
+            'anggaran_bulanan': laporan['anggaran_bulanan']
         }
         return render(request, self.template_name, context)
 
@@ -113,11 +82,10 @@ class LogoutView(View):
     def post(self, request, *args, **kwargs):
         user_id = request.session.get('user_id')
         if user_id:
-            user = User.objects.filter(id_user=user_id).first()
+            user = User.logout(user_id=user_id)
             if user:
-                user.logout()
                 request.session.flush()
-                return redirect('index')
+        return redirect('index')
 
 from .models import User, UserBiasa, Admin, Kategori, Pemasukan
 
@@ -129,20 +97,9 @@ class PemasukanListView(TemplateView):
             return redirect('index')
             
         user_id = request.session.get('user_id')
-        user_biasa = UserBiasa.objects.filter(id_user=user_id).first()
-        if not user_biasa:
-            base_user = User.objects.filter(id_user=user_id).first()
-            if base_user:
-                try:
-                    user_biasa = UserBiasa(user_ptr_id=base_user.id_user, nama=base_user.nama, password=base_user.password)
-                    user_biasa.save()
-                except Exception:
-                    user_biasa = UserBiasa.objects.first()
+        user_biasa = UserBiasa.get_or_create_user(user_id)
                     
-        # Load the user's pemasukan records if the user exists
-        pemasukan_list = []
-        if user_biasa:
-            pemasukan_list = Pemasukan.objects.filter(id_user=user_biasa).order_by('-tanggal')
+        pemasukan_list = Pemasukan.objects.filter(id_user=user_biasa).order_by('-tanggal')
             
         context = {
             'nama': request.session.get('nama'),
@@ -169,49 +126,14 @@ class AddPemasukanView(TemplateView):
         tanggal = request.POST.get('tanggal')
 
         user_id = request.session.get('user_id')
-        
-        try:
-            jumlah_float = float(jumlah)
-        except ValueError:
-            jumlah_float = 0.0
+        user_biasa = UserBiasa.get_or_create_user(user_id)
 
-        user_biasa = UserBiasa.objects.filter(id_user=user_id).first()
-        if not user_biasa:
-            base_user = User.objects.filter(id_user=user_id).first()
-            if base_user:
-                try:
-                    user_biasa = UserBiasa(user_ptr_id=base_user.id_user, nama=base_user.nama, password=base_user.password)
-                    user_biasa.save()
-                except Exception:
-                    user_biasa = UserBiasa.objects.first()
-            if not user_biasa:
-                user_biasa = UserBiasa.objects.create(nama="Dummy User Biasa", password="123")
-
-        admin_user = Admin.objects.first()
-        if not admin_user:
-            admin_user = Admin.objects.create(nama="System Admin", password="admin")
-            
-        kategori = Kategori.objects.filter(nama__iexact=kategori_nama).first()
-        if not kategori and kategori_nama:
-            if admin_user:
-                kategori = Kategori.objects.create(
-                    nama=kategori_nama,
-                    tipe_kategori="Pemasukan",
-                    id_user=admin_user
-                )
-
-        if not kategori:
-            kategori = Kategori.objects.first()
-            if not kategori:
-                kategori = Kategori.objects.create(nama="Lainnya", tipe_kategori="Pemasukan", id_user=admin_user)
-
-        if user_biasa and kategori and tanggal:
-            Pemasukan.objects.create(
-                jumlah=jumlah_float,
+        if tanggal:
+            user_biasa.tambahPemasukan(
+                jumlah=jumlah,
                 tanggal=tanggal,
                 deskripsi=deskripsi,
-                id_user=user_biasa,
-                id_kategori=kategori
+                kategori_nama=kategori_nama
             )
             return redirect('pemasukan')
             
@@ -227,19 +149,9 @@ class PengeluaranListView(TemplateView):
             return redirect('index')
             
         user_id = request.session.get('user_id')
-        user_biasa = UserBiasa.objects.filter(id_user=user_id).first()
-        if not user_biasa:
-            base_user = User.objects.filter(id_user=user_id).first()
-            if base_user:
-                try:
-                    user_biasa = UserBiasa(user_ptr_id=base_user.id_user, nama=base_user.nama, password=base_user.password)
-                    user_biasa.save()
-                except Exception:
-                    user_biasa = UserBiasa.objects.first()
+        user_biasa = UserBiasa.get_or_create_user(user_id)
                     
-        pengeluaran_list = []
-        if user_biasa:
-            pengeluaran_list = Pengeluaran.objects.filter(id_user=user_biasa).order_by('-tanggal')
+        pengeluaran_list = Pengeluaran.objects.filter(id_user=user_biasa).order_by('-tanggal')
             
         context = {
             'nama': request.session.get('nama'),
@@ -266,49 +178,14 @@ class AddPengeluaranView(TemplateView):
         tanggal = request.POST.get('tanggal')
 
         user_id = request.session.get('user_id')
-        
-        try:
-            jumlah_float = float(jumlah)
-        except ValueError:
-            jumlah_float = 0.0
+        user_biasa = UserBiasa.get_or_create_user(user_id)
 
-        user_biasa = UserBiasa.objects.filter(id_user=user_id).first()
-        if not user_biasa:
-            base_user = User.objects.filter(id_user=user_id).first()
-            if base_user:
-                try:
-                    user_biasa = UserBiasa(user_ptr_id=base_user.id_user, nama=base_user.nama, password=base_user.password)
-                    user_biasa.save()
-                except Exception:
-                    user_biasa = UserBiasa.objects.first()
-            if not user_biasa:
-                user_biasa = UserBiasa.objects.create(nama="Dummy User Biasa", password="123")
-
-        admin_user = Admin.objects.first()
-        if not admin_user:
-            admin_user = Admin.objects.create(nama="System Admin", password="admin")
-            
-        kategori = Kategori.objects.filter(nama__iexact=kategori_nama).first()
-        if not kategori and kategori_nama:
-            if admin_user:
-                kategori = Kategori.objects.create(
-                    nama=kategori_nama,
-                    tipe_kategori="Pengeluaran",
-                    id_user=admin_user
-                )
-
-        if not kategori:
-            kategori = Kategori.objects.first()
-            if not kategori:
-                kategori = Kategori.objects.create(nama="Lainnya", tipe_kategori="Pengeluaran", id_user=admin_user)
-
-        if user_biasa and kategori and tanggal:
-            Pengeluaran.objects.create(
-                jumlah=jumlah_float,
+        if tanggal:
+            user_biasa.tambahPengeluaran(
+                jumlah=jumlah,
                 tanggal=tanggal,
                 deskripsi=deskripsi,
-                id_user=user_biasa,
-                id_kategori=kategori
+                kategori_nama=kategori_nama
             )
             return redirect('pengeluaran')
             
@@ -324,19 +201,9 @@ class AnggaranListView(TemplateView):
             return redirect('index')
             
         user_id = request.session.get('user_id')
-        user_biasa = UserBiasa.objects.filter(id_user=user_id).first()
-        if not user_biasa:
-            base_user = User.objects.filter(id_user=user_id).first()
-            if base_user:
-                try:
-                    user_biasa = UserBiasa(user_ptr_id=base_user.id_user, nama=base_user.nama, password=base_user.password)
-                    user_biasa.save()
-                except Exception:
-                    user_biasa = UserBiasa.objects.first()
+        user_biasa = UserBiasa.get_or_create_user(user_id)
                     
-        anggaran_list = []
-        if user_biasa:
-            anggaran_list = Anggaran.objects.filter(id_user=user_biasa).order_by('-id_anggaran')
+        anggaran_list = Anggaran.objects.filter(id_user=user_biasa).order_by('-id_anggaran')
             
         context = {
             'nama': request.session.get('nama'),
@@ -362,48 +229,13 @@ class AddAnggaranView(TemplateView):
         kategori_nama = request.POST.get('kategori', '')
 
         user_id = request.session.get('user_id')
-        
-        try:
-            jumlah_float = float(jumlah_anggaran)
-        except ValueError:
-            jumlah_float = 0.0
+        user_biasa = UserBiasa.get_or_create_user(user_id)
 
-        user_biasa = UserBiasa.objects.filter(id_user=user_id).first()
-        if not user_biasa:
-            base_user = User.objects.filter(id_user=user_id).first()
-            if base_user:
-                try:
-                    user_biasa = UserBiasa(user_ptr_id=base_user.id_user, nama=base_user.nama, password=base_user.password)
-                    user_biasa.save()
-                except Exception:
-                    user_biasa = UserBiasa.objects.first()
-            if not user_biasa:
-                user_biasa = UserBiasa.objects.create(nama="Dummy User Biasa", password="123")
-
-        admin_user = Admin.objects.first()
-        if not admin_user:
-            admin_user = Admin.objects.create(nama="System Admin", password="admin")
-            
-        kategori = Kategori.objects.filter(nama__iexact=kategori_nama).first()
-        if not kategori and kategori_nama:
-            if admin_user:
-                kategori = Kategori.objects.create(
-                    nama=kategori_nama,
-                    tipe_kategori="Anggaran",
-                    id_user=admin_user
-                )
-
-        if not kategori:
-            kategori = Kategori.objects.first()
-            if not kategori:
-                kategori = Kategori.objects.create(nama="Lainnya", tipe_kategori="Anggaran", id_user=admin_user)
-
-        if user_biasa and kategori and periode:
-            Anggaran.objects.create(
-                jumlah_anggaran=jumlah_float,
+        if periode:
+            user_biasa.setAnggaran(
+                jumlah_anggaran=jumlah_anggaran,
                 periode=periode,
-                id_user=user_biasa,
-                id_kategori=kategori
+                kategori_nama=kategori_nama
             )
             return redirect('anggaran')
             
@@ -450,25 +282,14 @@ class PemasukanAPIView(View):
         except:
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
 
-        user_biasa = UserBiasa.objects.filter(id_user=user_id).first()
-        if not user_biasa:
-            user_biasa = UserBiasa.objects.first()
+        user_biasa = UserBiasa.get_or_create_user(user_id)
 
-        admin_user = Admin.objects.first()
-        if not admin_user:
-            admin_user = Admin.objects.create(nama="System Admin", password="admin")
-
-        kategori = Kategori.objects.filter(nama__iexact=kategori_nama).first()
-        if not kategori:
-            kategori = Kategori.objects.create(nama=kategori_nama, tipe_kategori="Pemasukan", id_user=admin_user)
-
-        if user_biasa and tanggal:
-            pemasukan = Pemasukan.objects.create(
+        if tanggal:
+            pemasukan = user_biasa.tambahPemasukan(
                 jumlah=jumlah,
                 tanggal=tanggal,
                 deskripsi=deskripsi,
-                id_user=user_biasa,
-                id_kategori=kategori
+                kategori_nama=kategori_nama
             )
             return JsonResponse({'status': 'success', 'message': 'Pemasukan created', 'id': pemasukan.id_pemasukan})
         return JsonResponse({'status': 'error', 'message': 'Missing required fields'}, status=400)
@@ -490,25 +311,14 @@ class PengeluaranAPIView(View):
         except:
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
 
-        user_biasa = UserBiasa.objects.filter(id_user=user_id).first()
-        if not user_biasa:
-            user_biasa = UserBiasa.objects.first()
+        user_biasa = UserBiasa.get_or_create_user(user_id)
 
-        admin_user = Admin.objects.first()
-        if not admin_user:
-            admin_user = Admin.objects.create(nama="System Admin", password="admin")
-
-        kategori = Kategori.objects.filter(nama__iexact=kategori_nama).first()
-        if not kategori:
-            kategori = Kategori.objects.create(nama=kategori_nama, tipe_kategori="Pengeluaran", id_user=admin_user)
-
-        if user_biasa and tanggal:
-            pengeluaran = Pengeluaran.objects.create(
+        if tanggal:
+            pengeluaran = user_biasa.tambahPengeluaran(
                 jumlah=jumlah,
                 tanggal=tanggal,
                 deskripsi=deskripsi,
-                id_user=user_biasa,
-                id_kategori=kategori
+                kategori_nama=kategori_nama
             )
             return JsonResponse({'status': 'success', 'message': 'Pengeluaran created', 'id': pengeluaran.id_pengeluaran})
         return JsonResponse({'status': 'error', 'message': 'Missing required fields'}, status=400)
@@ -529,25 +339,172 @@ class AnggaranAPIView(View):
         except:
             return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
 
-        user_biasa = UserBiasa.objects.filter(id_user=user_id).first()
-        if not user_biasa:
-            user_biasa = UserBiasa.objects.first()
+        user_biasa = UserBiasa.get_or_create_user(user_id)
 
-        admin_user = Admin.objects.first()
-        if not admin_user:
-            admin_user = Admin.objects.create(nama="System Admin", password="admin")
-
-        kategori = Kategori.objects.filter(nama__iexact=kategori_nama).first()
-        if not kategori:
-            kategori = Kategori.objects.create(nama=kategori_nama, tipe_kategori="Anggaran", id_user=admin_user)
-
-        if user_biasa and periode:
-            anggaran = Anggaran.objects.create(
+        if periode:
+            anggaran = user_biasa.setAnggaran(
                 jumlah_anggaran=jumlah,
                 periode=periode,
-                id_user=user_biasa,
-                id_kategori=kategori
+                kategori_nama=kategori_nama
             )
             return JsonResponse({'status': 'success', 'message': 'Anggaran created', 'id': anggaran.id_anggaran})
         return JsonResponse({'status': 'error', 'message': 'Missing required fields'}, status=400)
 
+@method_decorator(csrf_exempt, name='dispatch')
+class UserLogoutAPIView(View):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            user_id = data.get('user_id')
+        except:
+            user_id = request.POST.get('user_id')
+        user = User.logout(user_id=user_id)
+        if user:
+            return JsonResponse({'status': 'success', 'message': 'Logout successful'})
+        return JsonResponse({'status': 'error', 'message': 'Invalid user_id'}, status=400)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class LaporanAPIView(View):
+    def get(self, request, *args, **kwargs):
+        user_id = request.GET.get('user_id')
+        if not user_id:
+            return JsonResponse({'status': 'error', 'message': 'Missing user_id parameter'}, status=400)
+        user_biasa = UserBiasa.get_or_create_user(user_id)
+        laporan = user_biasa.lihatLaporan()
+        if 'pengeluaran_terbaru' in laporan:
+            laporan['pengeluaran_terbaru'] = list(laporan['pengeluaran_terbaru'].values('id_pengeluaran', 'jumlah', 'tanggal', 'deskripsi', 'id_kategori__nama'))
+        return JsonResponse({'status': 'success', 'data': laporan})
+
+@method_decorator(csrf_exempt, name='dispatch')
+class KategoriAPIView(View):
+    def get(self, request, *args, **kwargs):
+        kategori = Kategori.objects.all().values()
+        return JsonResponse({'status': 'success', 'data': list(kategori)})
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            nama = data.get('nama')
+            tipe = data.get('tipe')
+        except:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+        admin = Admin.get_system_admin()
+        kategori = admin.tambahKategori(nama=nama, tipe=tipe)
+        return JsonResponse({'status': 'success', 'message': 'Kategori created', 'id': kategori.id_kategori})
+
+@method_decorator(csrf_exempt, name='dispatch')
+class KategoriDetailAPIView(View):
+    def get(self, request, pk, *args, **kwargs):
+        kategori = Kategori.objects.filter(id_kategori=pk).values().first()
+        if kategori:
+            return JsonResponse({'status': 'success', 'data': kategori})
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
+    def put(self, request, pk, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            nama = data.get('nama')
+        except:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+        admin = Admin.get_system_admin()
+        admin.editKategori(id_kategori=pk, nama_baru=nama)
+        return JsonResponse({'status': 'success', 'message': 'Kategori updated'})
+
+    def delete(self, request, pk, *args, **kwargs):
+        admin = Admin.get_system_admin()
+        admin.hapusKategori(id_kategori=pk)
+        return JsonResponse({'status': 'success', 'message': 'Kategori deleted'})
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PemasukanDetailAPIView(View):
+    def get(self, request, pk, *args, **kwargs):
+        pemasukan = Pemasukan.objects.filter(id_pemasukan=pk).values('id_pemasukan', 'jumlah', 'tanggal', 'deskripsi', 'id_kategori__nama', 'id_user__nama').first()
+        if pemasukan:
+            return JsonResponse({'status': 'success', 'data': pemasukan})
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
+    def put(self, request, pk, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+        except:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+        pemasukan = Pemasukan.objects.filter(id_pemasukan=pk).first()
+        if pemasukan:
+            pemasukan.update(**data)
+            return JsonResponse({'status': 'success', 'message': 'Pemasukan updated'})
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
+
+    def delete(self, request, pk, *args, **kwargs):
+        pemasukan = Pemasukan.objects.filter(id_pemasukan=pk).first()
+        if pemasukan:
+            pemasukan.hapus()
+            return JsonResponse({'status': 'success', 'message': 'Pemasukan deleted'})
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PengeluaranDetailAPIView(View):
+    def get(self, request, pk, *args, **kwargs):
+        pengeluaran = Pengeluaran.objects.filter(id_pengeluaran=pk).values('id_pengeluaran', 'jumlah', 'tanggal', 'deskripsi', 'id_kategori__nama', 'id_user__nama').first()
+        if pengeluaran:
+            return JsonResponse({'status': 'success', 'data': pengeluaran})
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
+    def put(self, request, pk, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+        except:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+        pengeluaran = Pengeluaran.objects.filter(id_pengeluaran=pk).first()
+        if pengeluaran:
+            pengeluaran.update(**data)
+            return JsonResponse({'status': 'success', 'message': 'Pengeluaran updated'})
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
+
+    def delete(self, request, pk, *args, **kwargs):
+        pengeluaran = Pengeluaran.objects.filter(id_pengeluaran=pk).first()
+        if pengeluaran:
+            pengeluaran.hapus()
+            return JsonResponse({'status': 'success', 'message': 'Pengeluaran deleted'})
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class AnggaranDetailAPIView(View):
+    def get(self, request, pk, *args, **kwargs):
+        anggaran = Anggaran.objects.filter(id_anggaran=pk).values('id_anggaran', 'jumlah_anggaran', 'periode', 'id_kategori__nama', 'id_user__nama').first()
+        if anggaran:
+            return JsonResponse({'status': 'success', 'data': anggaran})
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
+    def put(self, request, pk, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+        except:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'}, status=400)
+        anggaran = Anggaran.objects.filter(id_anggaran=pk).first()
+        if anggaran:
+            anggaran.update(**data)
+            return JsonResponse({'status': 'success', 'message': 'Anggaran updated'})
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
+
+    def delete(self, request, pk, *args, **kwargs):
+        anggaran = Anggaran.objects.filter(id_anggaran=pk).first()
+        if anggaran:
+            anggaran.hapus()
+            return JsonResponse({'status': 'success', 'message': 'Anggaran deleted'})
+        return JsonResponse({'status': 'error', 'message': 'Not found'}, status=404)
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PemasukanTotalAPIView(View):
+    def get(self, request, *args, **kwargs):
+        user_id = request.GET.get('user_id')
+        if not user_id:
+            return JsonResponse({'status': 'error', 'message': 'Missing user_id parameter'}, status=400)
+        user_biasa = UserBiasa.get_or_create_user(user_id)
+        total = Pemasukan.getTotal(user_biasa)
+        return JsonResponse({'status': 'success', 'total': total})
+
+@method_decorator(csrf_exempt, name='dispatch')
+class PengeluaranTotalAPIView(View):
+    def get(self, request, *args, **kwargs):
+        user_id = request.GET.get('user_id')
+        if not user_id:
+            return JsonResponse({'status': 'error', 'message': 'Missing user_id parameter'}, status=400)
+        user_biasa = UserBiasa.get_or_create_user(user_id)
+        total = Pengeluaran.getTotal(user_biasa)
+        return JsonResponse({'status': 'success', 'total': total})

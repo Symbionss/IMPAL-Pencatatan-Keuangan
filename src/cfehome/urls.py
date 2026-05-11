@@ -21,7 +21,11 @@ from webiste.views import (
     PengeluaranListView, AddPengeluaranView, 
     AnggaranListView, AddAnggaranView,
     RegisterView,
-    UserLoginAPIView, PemasukanAPIView, PengeluaranAPIView, AnggaranAPIView
+    UserLoginAPIView, PemasukanAPIView, PengeluaranAPIView, AnggaranAPIView,
+    UserLogoutAPIView, LaporanAPIView,
+    KategoriAPIView, KategoriDetailAPIView,
+    PemasukanDetailAPIView, PengeluaranDetailAPIView, AnggaranDetailAPIView,
+    PemasukanTotalAPIView, PengeluaranTotalAPIView
 )
 
 urlpatterns = [
@@ -42,5 +46,13 @@ urlpatterns = [
     path('api/pemasukan/', PemasukanAPIView.as_view(), name='api_pemasukan'),
     path('api/pengeluaran/', PengeluaranAPIView.as_view(), name='api_pengeluaran'),
     path('api/anggaran/', AnggaranAPIView.as_view(), name='api_anggaran'),
+    path('api/logout/', UserLogoutAPIView.as_view(), name='api_logout'),
+    path('api/laporan/', LaporanAPIView.as_view(), name='api_laporan'),
+    path('api/kategori/', KategoriAPIView.as_view(), name='api_kategori'),
+    path('api/kategori/<int:pk>/', KategoriDetailAPIView.as_view(), name='api_kategori_detail'),
+    path('api/pemasukan/total/', PemasukanTotalAPIView.as_view(), name='api_pemasukan_total'),
+    path('api/pengeluaran/total/', PengeluaranTotalAPIView.as_view(), name='api_pengeluaran_total'),
+    path('api/pemasukan/<int:pk>/', PemasukanDetailAPIView.as_view(), name='api_pemasukan_detail'),
+    path('api/pengeluaran/<int:pk>/', PengeluaranDetailAPIView.as_view(), name='api_pengeluaran_detail'),
+    path('api/anggaran/<int:pk>/', AnggaranDetailAPIView.as_view(), name='api_anggaran_detail'),
 ]
-
