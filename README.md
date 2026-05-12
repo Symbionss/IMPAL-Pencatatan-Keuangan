@@ -37,6 +37,12 @@ Rancangan UI aplikasi yang berfokus pada pengalaman pengguna.
 
 ---
 
+## ERD
+
+![ERD](picture/YESSS%20ERD.drawio%20(1).png)
+
+---
+
 ## 🛠️ Stack Teknologi
 - **Frontend:** Belum menentukan fix (Next.js / Java Swing)
 - **Backend:** Belum menentukan fix (Node.js / Java)
