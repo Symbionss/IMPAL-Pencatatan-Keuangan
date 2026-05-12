@@ -26,6 +26,16 @@ Rancangan UI aplikasi yang berfokus pada pengalaman pengguna.
 
 ---
 
+## Sequence Diagram
+
+| Login | Logout | Kelola Kategori |
+| :---: | :---: | :---: |
+| ![Login](picture/sequence/login.png) | ![Dash](picture/sequence/logout.png) | ![Feature](picture/sequence/Login.png) |
+| Pemasukan | Pengeluaran | Lihat Laporan |
+| ![Login](picture/Login.png) | ![Dash](picture/Dashboard.png) | ![Feature](picture/Pemasukan.jpg) |
+
+---
+
 ## 🛠️ Stack Teknologi
 - **Frontend:** Belum menentukan fix (Next.js / Java Swing)
 - **Backend:** Belum menentukan fix (Node.js / Java)
