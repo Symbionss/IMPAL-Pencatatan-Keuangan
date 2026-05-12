@@ -12,7 +12,7 @@
 *Diagram Konteks yang menunjukkan aliran data global.*
 
 ### DFD Level 1
-![DFD Level 1](picture/dfd1.png)
+![DFD Level 1](picture/DFD LEVEL 1 BENER BANGETTTT.drawio.png)
 *Detail proses bisnis dan integrasi database.*
 
 ---
