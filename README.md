@@ -31,8 +31,9 @@ Rancangan UI aplikasi yang berfokus pada pengalaman pengguna.
 | Login | Logout | Kelola Kategori |
 | :---: | :---: | :---: |
 | ![Login](picture/Sequence/Login.drawio.png) | ![Logout](picture/Sequence/Logout.drawio.png) | ![Kategori](picture/Sequence/Kelola-Kategori.drawio.png) |
-| Pemasukan | Pengeluaran | Lihat Laporan |
-| ![Login](picture/Login.png) | ![Dash](picture/Dashboard.png) | ![Feature](picture/Pemasukan.jpg) |
+| Pemasukan | Pengeluaran | Anggaran |
+| ![Login](picture/Sequence/Pemasukan.drawio.png) | ![Dash](picture/Sequence/Pengeluaran.drawio.png) | ![Feature](picture/Sequence/Anggaran.drawio.png) |
+|| ![Feature](picture/Sequence/Lihat-Laporan.png) ||
 
 ---
 
