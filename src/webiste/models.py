@@ -249,4 +249,11 @@ class Anggaran(models.Model):
         terpakai = Pengeluaran.objects.filter(id_user=self.id_user, id_kategori=self.id_kategori).aggregate(Sum('jumlah'))['jumlah__sum'] or 0
         return (terpakai + pengeluaran) > self.jumlah_anggaran
 
+class PasswordHistory(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='password_history')
+    password_hash = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
 

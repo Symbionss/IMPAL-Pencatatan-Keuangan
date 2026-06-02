@@ -1,7 +1,9 @@
 from django.shortcuts import render, redirect
 from django.views.generic import TemplateView, View
 from django.contrib import messages
-from .models import User
+from django.core.exceptions import ValidationError
+from .models import User, PasswordHistory
+from .validators import validate_password_policy
 
 class RegisterView(TemplateView):
     template_name = "register.html"
@@ -13,10 +15,23 @@ class RegisterView(TemplateView):
 
         if nama and password and retype_password:
             if password == retype_password:
-                User.objects.create(
+                try:
+                    # Validasi kebijakan password sebelum pembuatan user
+                    validate_password_policy(password)
+                except ValidationError as e:
+                    for error in e.messages:
+                        messages.error(request, error)
+                    return render(request, self.template_name)
+                
+                # Buat user baru
+                user = User.objects.create(
                     nama=nama,
                     password=password
                 )
+                
+                # Simpan password ke riwayat (history)
+                PasswordHistory.objects.create(user=user, password_hash=password)
+                
                 return redirect('index')
             else:
                 messages.error(request, "Password yang dimasukan tidak sama.")
